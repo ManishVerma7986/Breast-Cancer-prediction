@@ -1,0 +1,10 @@
+{
+  "method": "Logistic Regression",
+  "best_variant": "RobustScaler + LogisticRegression",
+  "best_params": {
+    "model__C": 0.1
+  },
+  "probability_threshold": 0.5,
+  "test_accuracy": 0.9912280701754386,
+  "test_roc_auc": 0.998015873015873
+}

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Breast Cancer Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="topbar" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">Logistic Regression Model</p>
+          <h1 id="page-title">Breast Cancer Prediction</h1>
+        </div>
+        <div class="score-strip" aria-label="Model scores">
+          <span>Accuracy <strong>{{ '%.2f'|format(metadata.test_accuracy * 100) }}%</strong></span>
+          <span>ROC AUC <strong>{{ '%.4f'|format(metadata.test_roc_auc) }}</strong></span>
+        </div>
+      </section>
+
+      {% if errors %}
+        <section class="alert" role="alert">
+          {% for error in errors %}
+            <p>{{ error }}</p>
+          {% endfor %}
+        </section>
+      {% endif %}
+
+      <section class="workspace">
+        <form class="input-panel" method="post">
+          <div class="panel-header">
+            <div>
+              <h2>Patient Measurements</h2>
+              <p>Threshold: {{ '%.2f'|format(metadata.probability_threshold) }}</p>
+            </div>
+            <div class="preset-group" aria-label="Preset values">
+              <a class="{{ 'active' if selected_preset == 'overall' else '' }}" href="{{ url_for('index', preset='overall') }}">Overall</a>
+              <a class="{{ 'active' if selected_preset == 'benign' else '' }}" href="{{ url_for('index', preset='benign') }}">Benign</a>
+              <a class="{{ 'active' if selected_preset == 'malignant' else '' }}" href="{{ url_for('index', preset='malignant') }}">Malignant</a>
+            </div>
+          </div>
+
+          {% for group_name, features in feature_groups.items() %}
+            <fieldset class="feature-group">
+              <legend>{{ group_name }}</legend>
+              <div class="field-grid">
+                {% for feature in features %}
+                  <label class="field">
+                    <span>{{ labels[feature] }}</span>
+                    <input
+                      type="number"
+                      name="{{ feature }}"
+                      step="any"
+                      value="{{ values[feature] }}"
+                      required
+                    >
+                    <small>{{ feature_ranges[feature]['min'] }} to {{ feature_ranges[feature]['max'] }}</small>
+                  </label>
+                {% endfor %}
+              </div>
+            </fieldset>
+          {% endfor %}
+
+          <div class="actions">
+            <button type="submit">Predict Diagnosis</button>
+          </div>
+        </form>
+
+        <aside class="result-panel" aria-live="polite">
+          {% if result %}
+            <div class="diagnosis {{ 'danger' if result.label == 'M' else 'safe' }}">
+              <span>Prediction</span>
+              <strong>{{ result.diagnosis }}</strong>
+            </div>
+            <div class="probability">
+              <div class="probability-row">
+                <span>Malignant Probability</span>
+                <strong>{{ '%.2f'|format(result.malignant_probability * 100) }}%</strong>
+              </div>
+              <div class="meter">
+                <span style="width: {{ '%.2f'|format(result.malignant_probability * 100) }}%"></span>
+              </div>
+              <div class="probability-row muted">
+                <span>Benign Probability</span>
+                <strong>{{ '%.2f'|format(result.benign_probability * 100) }}%</strong>
+              </div>
+            </div>
+          {% else %}
+            <div class="empty-state">
+              <span>Prediction</span>
+              <strong>Ready</strong>
+            </div>
+          {% endif %}
+
+          <div class="model-card">
+            <h2>Model</h2>
+            <dl>
+              <div>
+                <dt>Method</dt>
+                <dd>{{ metadata.method }}</dd>
+              </div>
+              <div>
+                <dt>Variant</dt>
+                <dd>{{ metadata.best_variant }}</dd>
+              </div>
+              <div>
+                <dt>C Value</dt>
+                <dd>{{ metadata.best_params['model__C'] }}</dd>
+              </div>
+            </dl>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </body>
+</html>

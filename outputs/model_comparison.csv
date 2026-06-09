@@ -1,0 +1,2 @@
+model,test_accuracy,test_roc_auc,best_params
+RobustScaler + LogisticRegression,0.9912280701754386,0.998015873015873,{'model__C': 0.1}
